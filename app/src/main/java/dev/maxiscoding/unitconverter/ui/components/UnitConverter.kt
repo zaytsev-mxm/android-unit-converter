@@ -30,34 +30,38 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun UnitConverter(modifier: Modifier = Modifier) {
     val units = arrayOf("Centimeters", "Meters", "Feet", "Millimeters")
+    val conversionFactors = mapOf(
+        "Centimeters to Meters" to 0.01,
+        "Centimeters to Feet" to 1 / 30.48,
+        "Centimeters to Millimeters" to 10.0,
+        "Meters to Centimeters" to 100.0,
+        "Meters to Feet" to 1 / 0.3048,
+        "Meters to Millimeters" to 1000.0,
+        "Feet to Centimeters" to 30.48,
+        "Feet to Meters" to 0.3048,
+        "Feet to Millimeters" to 304.8,
+        "Millimeters to Centimeters" to 0.1,
+        "Millimeters to Meters" to 0.001,
+        "Millimeters to Feet" to 1 / 304.8
+    )
     var fromUnit by remember { mutableStateOf(units[0]) }
     var toUnit by remember { mutableStateOf(units[1]) }
     var fromDropdownOpen by remember { mutableStateOf(false) }
     var toDropdownOpen by remember { mutableStateOf(false) }
     var input by remember { mutableStateOf("") }
-    val result by remember { derivedStateOf {
-        if (input.isNotEmpty()) {
-            val inputValue = input.toFloatOrNull() ?: return@derivedStateOf ""
-            return@derivedStateOf when {
-                fromUnit == "Centimeters" && toUnit == "Meters" -> (inputValue / 100).toString()
-                fromUnit == "Centimeters" && toUnit == "Feet" -> (inputValue / 30.48).toString()
-                fromUnit == "Centimeters" && toUnit == "Millimeters" -> (inputValue * 10).toString()
-                fromUnit == "Meters" && toUnit == "Centimeters" -> (inputValue * 100).toString()
-                fromUnit == "Meters" && toUnit == "Feet" -> (inputValue / 0.3048).toString()
-                fromUnit == "Meters" && toUnit == "Millimeters" -> (inputValue * 1000).toString()
-                fromUnit == "Feet" && toUnit == "Centimeters" -> (inputValue * 30.48).toString()
-                fromUnit == "Feet" && toUnit == "Meters" -> (inputValue * 0.3048).toString()
-                fromUnit == "Feet" && toUnit == "Millimeters" -> (inputValue * 304.8).toString()
-                fromUnit == "Millimeters" && toUnit == "Centimeters" -> (inputValue / 10).toString()
-                fromUnit == "Millimeters" && toUnit == "Meters" -> (inputValue / 1000).toString()
-                fromUnit == "Millimeters" && toUnit == "Feet" -> (inputValue / 304.8).toString()
-                fromUnit == toUnit -> input
-                else -> input
+    val result by remember {
+        derivedStateOf {
+            if (input.isNotEmpty()) {
+                val inputValue = input.toFloatOrNull() ?: return@derivedStateOf ""
+                if (fromUnit == toUnit) return@derivedStateOf input
+                val key = "$fromUnit to $toUnit"
+                val factor = conversionFactors[key] ?: return@derivedStateOf input
+                (inputValue * factor).toString()
+            } else {
+                ""
             }
-        } else {
-            return@derivedStateOf ""
         }
-    } }
+    }
 
     fun changeUnits(from: Boolean = true, unit: String) {
         if (from) {
